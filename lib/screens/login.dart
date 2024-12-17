@@ -4,6 +4,7 @@ import 'package:flowers_app/screens/register.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants/constants.dart';
 import '../model/user.dart';
 import '../services/prefrence.dart';
 import 'admin_panel.dart';
@@ -34,18 +35,14 @@ class _LoginScreenState extends State<LoginScreen> {
             _passwordController.text.trim(), _rememberMe);
       }
       if (user?.accountType == 'User') {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => Home(),
-          ),
+          MaterialPageRoute(builder: (context) => Home()),
         );
       } else {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => AdminPanel(),
-          ),
+          MaterialPageRoute(builder: (context) => AdminPanel()),
         );
       }
     }
@@ -89,11 +86,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     Container(
                       width: double.infinity,
                       height: screenHeight * 0.3,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF3A5A40),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(100),
-                          bottomRight: Radius.circular(100),
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(90),
+                          bottomRight: Radius.circular(90),
                         ),
                       ),
                     ),
@@ -113,12 +110,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                const Text(
+                Text(
                   "Welcome Back!",
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF3A5A40),
+                    color: primaryColor,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -173,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Checkbox(
-                        activeColor: const Color(0xFF588157),
+                        activeColor: primaryColor,
                         checkColor: Colors.white,
                         value: _rememberMe,
                         onChanged: (newValue) {
@@ -189,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Login Button
                 CustomButton(
                   buttonText: "Login",
-                  bgButtonColor: const Color(0xFF588157),
+                  bgButtonColor: thirdColor,
                   onPress: () {
                     _login();
                   },
@@ -213,10 +210,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         "Create Account",
                         style: TextStyle(
-                          color: Color(0xFF3A5A40),
+                          color: primaryColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

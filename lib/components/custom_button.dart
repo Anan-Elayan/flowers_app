@@ -1,3 +1,4 @@
+import 'package:flowers_app/constants/constants.dart';
 import 'package:flutter/material.dart';
 
 class CustomButton extends StatefulWidget {
@@ -41,7 +42,7 @@ class _CustomButtonState extends State<CustomButton> {
 
   void _onTap() {
     setState(() {
-      _currentBgColor = Colors.white54;
+      _currentBgColor = secondaryColor;
     });
     Future.delayed(Duration(milliseconds: 200), () {
       setState(() {

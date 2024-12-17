@@ -89,17 +89,6 @@ Future<void> saveLoginCredentials(
   }
 }
 
-Future<void> loadLoginCredentials(
-    String userName, String password, bool rememberMe) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool rememberMe = prefs.getBool('remember_me') ?? false;
-  if (rememberMe) {
-    rememberMe = true;
-    userName = prefs.getString('saved_username') ?? '';
-    password = prefs.getString('saved_password') ?? '';
-  }
-}
-
 Future<void> printAllUsers() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? userData = prefs.getString('user_list');

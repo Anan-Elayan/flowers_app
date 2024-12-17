@@ -1,7 +1,9 @@
+import 'package:flowers_app/components/custom_button.dart';
 import 'package:flowers_app/services/prefrence.dart';
 import 'package:flutter/material.dart';
 
 import '../components/custom_text_fields.dart';
+import '../constants/constants.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -58,11 +60,11 @@ class _RegisterState extends State<Register> {
                     Container(
                       width: double.infinity,
                       height: 200,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF3A5A40),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(100),
-                          bottomRight: Radius.circular(100),
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(90),
+                          bottomRight: Radius.circular(90),
                         ),
                       ),
                     ),
@@ -80,19 +82,19 @@ class _RegisterState extends State<Register> {
                 ),
                 const SizedBox(height: 20),
 
-                const Text(
+                Text(
                   "Create an Account",
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF3A5A40),
+                    color: primaryColor,
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Column(
                     children: [
                       CustomTextFields(
@@ -200,25 +202,12 @@ class _RegisterState extends State<Register> {
                       ),
                       const SizedBox(height: 20),
 
-                      ElevatedButton(
-                        onPressed: register,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF588157),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 50,
-                            vertical: 15,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          "Register",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                          ),
-                        ),
+                      CustomButton(
+                        buttonText: "Register",
+                        bgButtonColor: thirdColor,
+                        onPress: () {
+                          register();
+                        },
                       ),
                     ],
                   ),
@@ -227,11 +216,24 @@ class _RegisterState extends State<Register> {
 
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    "Already have an account? Login",
-                    style: TextStyle(color: Color(0xFF3A5A40)),
+                  child: RichText(
+                    text: TextSpan(
+                      text: "Already have an account? ",
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 18,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: "Login",
+                          style: TextStyle(
+                              color: primaryColor, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                const SizedBox(height: 10),
               ],
             ),
           ),
