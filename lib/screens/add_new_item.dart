@@ -131,7 +131,7 @@ class _AddNewItemState extends State<AddNewItem> {
                           width: 130,
                           fit: BoxFit.cover,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         CustomButton(
