@@ -1,3 +1,4 @@
+// Authentication Service
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,77 +31,60 @@ Future<bool> isEmailExists(String email) async {
   return false;
 }
 
-Future<String> registerInPref(
-  String userNameController,
-  String emailController,
-  String passwordController,
-  String cityController,
-  String phoneNumberController,
+Future<String> registerUser(
+  String username,
+  String email,
+  String password,
+  String city,
+  String phoneNumber,
   String accountType,
 ) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  if (await isUsernameExists(userNameController)) {
+  if (await isUsernameExists(username)) {
     return "Username already exists! Please choose another.";
   }
-  if (await isEmailExists(emailController)) {
+  if (await isEmailExists(email)) {
     return "Email already exists! Please choose another.";
   }
   User newUser = User(
-    username: userNameController,
-    email: emailController,
-    password: passwordController,
-    city: cityController,
-    phoneNumber: phoneNumberController,
+    username: username,
+    email: email,
+    password: password,
+    city: city,
+    phoneNumber: phoneNumber,
     accountType: accountType,
   );
 
   String? existingData = prefs.getString('user_list');
   List<dynamic> userList = existingData != null ? jsonDecode(existingData) : [];
-
   userList.add(newUser.toJson());
   await prefs.setString('user_list', jsonEncode(userList));
   return "Registration successful!";
 }
 
-Future<User> login(String userName, String password) async {
+Future<User> login(String username, String password) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-
   String? existingData = prefs.getString('user_list');
   List<dynamic> userList = existingData != null ? jsonDecode(existingData) : [];
   for (var userJson in userList) {
     User user = User.fromJson(userJson);
-    if (user.username == userName && user.password == password) {
+    if (user.username == username && user.password == password) {
+      prefs.setString('logged_in_user', jsonEncode(user.toJson()));
       return user;
     }
   }
-  return userList[0];
+  throw Exception("Invalid username or password");
 }
 
 Future<void> saveLoginCredentials(
-    String userName, String password, bool rememberMe) async {
+    String username, String password, bool rememberMe) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool('remember_me', rememberMe);
   if (rememberMe) {
-    await prefs.setString('saved_username', userName);
+    await prefs.setString('saved_username', username);
     await prefs.setString('saved_password', password);
   } else {
     await prefs.remove('saved_username');
     await prefs.remove('saved_password');
-  }
-}
-
-Future<void> printAllUsers() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? userData = prefs.getString('user_list');
-
-  if (userData != null) {
-    List<dynamic> userList = jsonDecode(userData);
-    for (var userJson in userList) {
-      User user = User.fromJson(userJson);
-      print(
-          "Username: ${user.username}, Email: ${user.email}, Type: ${user.accountType} , Password: ${user.password}");
-    }
-  } else {
-    print("No users found.");
   }
 }

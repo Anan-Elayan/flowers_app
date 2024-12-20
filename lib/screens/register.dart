@@ -24,7 +24,7 @@ class _RegisterState extends State<Register> {
 
   Future<void> register() async {
     if (_formKey.currentState!.validate()) {
-      String result = await registerInPref(
+      String result = await registerUser(
         _usernameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text.trim(),
@@ -36,7 +36,6 @@ class _RegisterState extends State<Register> {
         SnackBar(content: Text(result)),
       );
       if (result == "Registration successful!") {
-        printAllUsers();
         Navigator.pop(context);
       }
     }

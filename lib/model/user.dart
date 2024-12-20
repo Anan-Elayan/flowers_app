@@ -1,10 +1,11 @@
+// User Model
 class User {
-  String username;
-  String email;
-  String password;
-  String city;
-  String phoneNumber;
-  String accountType;
+  final String username;
+  final String email;
+  final String password;
+  final String city;
+  final String phoneNumber;
+  final String accountType;
 
   User({
     required this.username,
@@ -15,17 +16,6 @@ class User {
     required this.accountType,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'username': username,
-      'email': email,
-      'password': password,
-      'city': city,
-      'phoneNumber': phoneNumber,
-      'accountType': accountType,
-    };
-  }
-
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       username: json['username'],
@@ -35,5 +25,16 @@ class User {
       phoneNumber: json['phoneNumber'],
       accountType: json['accountType'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'username': username,
+      'email': email,
+      'password': password,
+      'city': city,
+      'phoneNumber': phoneNumber,
+      'accountType': accountType,
+    };
   }
 }
