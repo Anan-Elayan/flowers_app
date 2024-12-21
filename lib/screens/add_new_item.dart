@@ -11,7 +11,7 @@ import 'package:uuid/uuid.dart';
 import '../components/custom_text_fields.dart';
 
 class AddNewItem extends StatefulWidget {
-  final VoidCallback onItemAdded; // Callback for refreshing items
+  final VoidCallback onItemAdded;
   const AddNewItem({Key? key, required this.onItemAdded}) : super(key: key);
 
   @override
@@ -21,9 +21,22 @@ class AddNewItem extends StatefulWidget {
 class _AddNewItemState extends State<AddNewItem> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
   File? _imageFile;
 
-  Future<void> saveItem(String name, String price, String? photoPath) async {
+  Future<void> saveItem(
+      String name, String price, String? photoPath, String quantity) async {
+    // Validate that quantity and price are valid numbers
+    final parsedQuantity = int.tryParse(quantity);
+    final parsedPrice = double.tryParse(price);
+
+    if (parsedQuantity == null || parsedPrice == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter valid numeric values.")),
+      );
+      return;
+    }
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? existingData = prefs.getString('flower_items');
     List<dynamic> flowerList =
@@ -39,21 +52,25 @@ class _AddNewItemState extends State<AddNewItem> {
         : "Unknown Admin";
 
     Map<String, dynamic> newItem = {
-      "id": itemId, // Add unique id
+      "id": itemId, // Unique ID
       "name": name,
-      "price": price,
+      "price": parsedPrice.toStringAsFixed(2), // Ensure consistent price format
       "photo": photoPath ?? "",
-      "admin": adminIdentifier, // Add admin identifier
+      "quantity": parsedQuantity, // Store as an integer
+      "admin": adminIdentifier,
+      "available_quantity":
+          parsedQuantity, // Available quantity matches initial
     };
 
     flowerList.add(newItem);
+
     await prefs.setString('flower_items', jsonEncode(flowerList));
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Item added successfully!")),
     );
-    widget.onItemAdded(); // Trigger the refresh callback
-    Navigator.pop(context); // Navigate back to AdminPanel
+    widget.onItemAdded();
+    Navigator.pop(context);
   }
 
   // Function to pick an image from the gallery
@@ -115,6 +132,20 @@ class _AddNewItemState extends State<AddNewItem> {
                 },
               ),
               const SizedBox(height: 10),
+              CustomTextFields(
+                txtLabel: "Quantity",
+                txtPrefixIcon: Icons.production_quantity_limits_outlined,
+                controller: _quantityController,
+                isVisibleContent: false,
+                keyBordType: TextInputType.number,
+                validate: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the quantity';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 10),
               _imageFile == null
                   ? CustomButton(
                       buttonText: "Add Photo",
@@ -151,8 +182,9 @@ class _AddNewItemState extends State<AddNewItem> {
                 onPress: () {
                   String name = _nameController.text.trim();
                   String price = _priceController.text.trim();
+                  String quantity = _quantityController.text.trim();
 
-                  if (name.isEmpty || price.isEmpty) {
+                  if (name.isEmpty || price.isEmpty || quantity.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text("Please fill in all fields.")),
@@ -160,7 +192,7 @@ class _AddNewItemState extends State<AddNewItem> {
                     return;
                   }
 
-                  saveItem(name, price, _imageFile?.path);
+                  saveItem(name, price, _imageFile?.path, quantity);
                 },
               ),
             ],

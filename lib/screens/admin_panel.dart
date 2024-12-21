@@ -34,17 +34,11 @@ class _AdminPanelState extends State<AdminPanel> {
 
     if (savedItems != null && adminIdentifier != null) {
       List<dynamic> allItems = jsonDecode(savedItems);
-      // Filter items for the logged-in admin
       return allItems
           .where((item) => item['admin'] == adminIdentifier)
           .toList();
     }
     return [];
-  }
-
-  Future<void> _saveMyItems(List<dynamic> items) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('flower_items', jsonEncode(items));
   }
 
   Future<String?> _loadLoginCredentials() async {
@@ -83,9 +77,9 @@ class _AdminPanelState extends State<AdminPanel> {
       int itemIndex = allItems.indexWhere((item) => item['id'] == id);
 
       if (itemIndex != -1) {
-        allItems[itemIndex] = updatedItem; // Update the item
+        allItems[itemIndex] = updatedItem;
         await prefs.setString('flower_items', jsonEncode(allItems));
-        refreshItems(); // Refresh the filtered list
+        refreshItems();
       }
     }
   }
@@ -191,6 +185,9 @@ class _AdminPanelState extends State<AdminPanel> {
                               builder: (context) {
                                 final TextEditingController nameController =
                                     TextEditingController(text: item['name']);
+                                final TextEditingController quantityController =
+                                    TextEditingController(
+                                        text: item['quantity']);
                                 final TextEditingController priceController =
                                     TextEditingController(
                                         text: item['price'].toString());
@@ -212,6 +209,13 @@ class _AdminPanelState extends State<AdminPanel> {
                                         ),
                                         keyboardType: TextInputType.number,
                                       ),
+                                      TextField(
+                                        controller: quantityController,
+                                        decoration: const InputDecoration(
+                                          labelText: "Quantity",
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                      ),
                                     ],
                                   ),
                                   actions: [
@@ -225,8 +229,9 @@ class _AdminPanelState extends State<AdminPanel> {
                                       onPressed: () {
                                         Navigator.pop(context);
                                         _updateItem(item['id'], {
-                                          'id': item['id'], // Retain the id
+                                          'id': item['id'],
                                           'name': nameController.text,
+                                          'quantity': quantityController.text,
                                           'price': double.tryParse(
                                                   priceController.text) ??
                                               0.0,
@@ -270,27 +275,42 @@ class _AdminPanelState extends State<AdminPanel> {
                                           color: Colors.grey,
                                         ),
                                   const SizedBox(width: 16),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item['name'],
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              item['name'],
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            Text(
+                                              "${item['quantity']} Items",
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        "Price: \$${item['price']}",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: fourthColor,
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          "Price: \$${item['price']}",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: fourthColor,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
