@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flowers_app/components/custom_button.dart';
 import 'package:flowers_app/constants/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
@@ -26,7 +27,6 @@ class _AddNewItemState extends State<AddNewItem> {
 
   Future<void> saveItem(
       String name, String price, String? photoPath, String quantity) async {
-    // Validate that quantity and price are valid numbers
     final parsedQuantity = int.tryParse(quantity);
     final parsedPrice = double.tryParse(price);
 
@@ -42,38 +42,38 @@ class _AddNewItemState extends State<AddNewItem> {
     List<dynamic> flowerList =
         existingData != null ? jsonDecode(existingData) : [];
 
-    // Generate a unique id for the item
     String itemId = const Uuid().v4();
 
-    // Get the logged-in admin's username or email
     String? loggedInUser = prefs.getString('logged_in_user');
     String? adminIdentifier = loggedInUser != null
-        ? jsonDecode(loggedInUser)['username'] // Or use 'email' if preferred
+        ? jsonDecode(loggedInUser)['username']
         : "Unknown Admin";
 
     Map<String, dynamic> newItem = {
-      "id": itemId, // Unique ID
+      "id": itemId,
       "name": name,
-      "price": parsedPrice.toStringAsFixed(2), // Ensure consistent price format
+      "price": parsedPrice.toStringAsFixed(2),
       "photo": photoPath ?? "",
-      "quantity": parsedQuantity, // Store as an integer
+      "quantity": parsedQuantity,
       "admin": adminIdentifier,
-      "available_quantity":
-          parsedQuantity, // Available quantity matches initial
+      "available_quantity": parsedQuantity,
     };
 
     flowerList.add(newItem);
 
     await prefs.setString('flower_items', jsonEncode(flowerList));
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Item added successfully!")),
+    Fluttertoast.showToast(
+      msg: "Item added successfully!",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
     );
+
     widget.onItemAdded();
     Navigator.pop(context);
   }
 
-  // Function to pick an image from the gallery
   Future<void> pickImage() async {
     try {
       final ImagePicker picker = ImagePicker();
@@ -187,11 +187,13 @@ class _AddNewItemState extends State<AddNewItem> {
                   if (name.isEmpty || price.isEmpty || quantity.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text("Please fill in all fields.")),
+                        content: Text(
+                          "Please fill in all fields.",
+                        ),
+                      ),
                     );
                     return;
                   }
-
                   saveItem(name, price, _imageFile?.path, quantity);
                 },
               ),

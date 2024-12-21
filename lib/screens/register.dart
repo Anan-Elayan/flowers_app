@@ -43,8 +43,6 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -98,6 +96,7 @@ class _RegisterState extends State<Register> {
                     children: [
                       CustomTextFields(
                         txtLabel: "Username",
+                        keyBordType: TextInputType.name,
                         txtPrefixIcon: Icons.account_circle,
                         isVisibleContent: false,
                         controller: _usernameController,
@@ -112,6 +111,7 @@ class _RegisterState extends State<Register> {
 
                       CustomTextFields(
                         txtLabel: "Email",
+                        keyBordType: TextInputType.emailAddress,
                         txtPrefixIcon: Icons.email,
                         isVisibleContent: false,
                         controller: _emailController,
@@ -147,6 +147,7 @@ class _RegisterState extends State<Register> {
 
                       CustomTextFields(
                         txtLabel: "City",
+                        keyBordType: TextInputType.name,
                         txtPrefixIcon: Icons.location_city,
                         isVisibleContent: false,
                         controller: _cityController,
@@ -161,6 +162,7 @@ class _RegisterState extends State<Register> {
 
                       CustomTextFields(
                         txtLabel: "Phone Number",
+                        keyBordType: TextInputType.number,
                         txtPrefixIcon: Icons.phone,
                         isVisibleContent: false,
                         controller: _phoneNumberController,
@@ -180,15 +182,23 @@ class _RegisterState extends State<Register> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text("Account Type:",
-                              style: TextStyle(fontSize: 16)),
+                          const Text(
+                            "Account Type:",
+                            style: TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
                           const SizedBox(width: 10),
                           DropdownButton<String>(
                             value: accountType,
                             items: ["User", "Admin"]
                                 .map(
                                   (type) => DropdownMenuItem(
-                                      value: type, child: Text(type)),
+                                    value: type,
+                                    child: Text(
+                                      type,
+                                    ),
+                                  ),
                                 )
                                 .toList(),
                             onChanged: (value) {
@@ -218,7 +228,7 @@ class _RegisterState extends State<Register> {
                   child: RichText(
                     text: TextSpan(
                       text: "Already have an account? ",
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.grey,
                         fontSize: 18,
                       ),
@@ -226,7 +236,9 @@ class _RegisterState extends State<Register> {
                         TextSpan(
                           text: "Login",
                           style: TextStyle(
-                              color: primaryColor, fontWeight: FontWeight.bold),
+                            color: primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),

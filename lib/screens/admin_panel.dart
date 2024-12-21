@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flowers_app/constants/constants.dart';
 import 'package:flowers_app/screens/add_new_item.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login.dart';
@@ -44,6 +45,15 @@ class _AdminPanelState extends State<AdminPanel> {
   Future<String?> _loadLoginCredentials() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('saved_username');
+  }
+
+  Future<List<Map<String, dynamic>>> _loadOrders() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? ordersJson = prefs.getString('flutter.orders');
+    if (ordersJson != null) {
+      return List<Map<String, dynamic>>.from(jsonDecode(ordersJson));
+    }
+    return [];
   }
 
   void refreshItems() {
@@ -160,7 +170,6 @@ class _AdminPanelState extends State<AdminPanel> {
                   if (items.isEmpty) {
                     return const Center(child: Text("No items found."));
                   }
-
                   return ListView.builder(
                     itemCount: items.length,
                     itemBuilder: (context, index) {
@@ -168,9 +177,46 @@ class _AdminPanelState extends State<AdminPanel> {
                       return Dismissible(
                         key: UniqueKey(),
                         direction: DismissDirection.endToStart,
-                        onDismissed: (direction) {
-                          _deleteItem(
-                              item['id']); // Use the unique id to delete
+                        confirmDismiss: (direction) async {
+                          bool? shouldDelete = await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text("Confirm Deletion"),
+                                content: const Text(
+                                    "Are you sure you want to delete this item?"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(
+                                          false); // Close the dialog and do not delete
+                                    },
+                                    child: const Text("No"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(true);
+                                      Fluttertoast.showToast(
+                                        msg: "Deleted successfully.",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.BOTTOM,
+                                        backgroundColor: Colors.green,
+                                        textColor: Colors.white,
+                                      );
+                                    },
+                                    child: const Text("Yes"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          if (shouldDelete == true) {
+                            _deleteItem(item['id']); // Proceed with deletion
+                            return true; // Allow dismiss
+                          }
+
+                          return false; // Prevent dismiss
                         },
                         background: Container(
                           color: Colors.red,
@@ -187,10 +233,17 @@ class _AdminPanelState extends State<AdminPanel> {
                                     TextEditingController(text: item['name']);
                                 final TextEditingController quantityController =
                                     TextEditingController(
-                                        text: item['quantity']);
+                                  text: item['quantity'].toString(),
+                                );
+                                final TextEditingController
+                                    availableQuantityController =
+                                    TextEditingController(
+                                  text: item['available_quantity'].toString(),
+                                );
                                 final TextEditingController priceController =
                                     TextEditingController(
-                                        text: item['price'].toString());
+                                  text: item['price'].toString(),
+                                );
                                 return AlertDialog(
                                   title: const Text("Update Item"),
                                   content: Column(
@@ -213,6 +266,13 @@ class _AdminPanelState extends State<AdminPanel> {
                                         controller: quantityController,
                                         decoration: const InputDecoration(
                                           labelText: "Quantity",
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                      ),
+                                      TextField(
+                                        controller: availableQuantityController,
+                                        decoration: const InputDecoration(
+                                          labelText: "Available Quantity",
                                         ),
                                         keyboardType: TextInputType.number,
                                       ),
@@ -293,7 +353,7 @@ class _AdminPanelState extends State<AdminPanel> {
                                               ),
                                             ),
                                             Text(
-                                              "${item['quantity']} Items",
+                                              "${item['quantity']} ",
                                               style: const TextStyle(
                                                 fontSize: 16,
                                                 color: Colors.white,
@@ -327,8 +387,127 @@ class _AdminPanelState extends State<AdminPanel> {
             ),
 
             // All Orders Tab
-            const Center(
-              child: Text("All Orders Page"),
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: _loadOrders(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                  List<Map<String, dynamic>> orders = snapshot.data!;
+
+                  return ListView.builder(
+                    itemCount: orders.length,
+                    itemBuilder: (context, index) {
+                      final order = orders[index];
+                      final List<dynamic> items = order['items'];
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 16),
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "User: ${order['username']}",
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      "Total Price: \$${order['totalPrice'].toStringAsFixed(2)}",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      "Items:",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ...items.map((item) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 4.0),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                "${item['name']} x ${item['quantity']}",
+                                                style: const TextStyle(
+                                                    fontSize: 14),
+                                              ),
+                                            ),
+                                            Text(
+                                              "\$${(double.parse(item['price'].toString()) * item['quantity']).toStringAsFixed(2)}",
+                                              style:
+                                                  const TextStyle(fontSize: 14),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ],
+                                ),
+                              ),
+                              // Add the green tick icon
+                              IconButton(
+                                onPressed: () async {
+                                  // Remove the order from the list
+                                  setState(() {
+                                    orders.removeAt(
+                                        index); // Directly remove the order
+                                  });
+
+                                  // Save the updated orders to SharedPreferences
+                                  SharedPreferences prefs =
+                                      await SharedPreferences.getInstance();
+                                  await prefs.setString(
+                                      'flutter.orders', jsonEncode(orders));
+
+                                  // Show a toast message indicating the order was marked as served
+                                  Fluttertoast.showToast(
+                                    msg: "Order served successfully.",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                    backgroundColor: Colors.green,
+                                    textColor: Colors.white,
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                ),
+                                tooltip: "Mark as served",
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                } else {
+                  return const Center(child: Text("No orders found."));
+                }
+              },
             ),
           ],
         ),

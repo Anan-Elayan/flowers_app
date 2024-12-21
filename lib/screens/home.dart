@@ -97,10 +97,8 @@ class _HomeState extends State<Home> {
         }
       }
       cartItems.clear();
-      _showToast("Purchase successful!");
     });
 
-    // Save updated items back to SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('flower_items', jsonEncode(marketItems));
   }

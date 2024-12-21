@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/constants.dart';
 
@@ -23,10 +25,60 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   double _calculateTotalPrice() {
-    return widget.cartItems.fold<double>(
-      0.0,
-      (sum, item) =>
-          sum + (double.parse(item['price'].toString()) * item['quantity']),
+    try {
+      return widget.cartItems.fold<double>(
+        0.0,
+        (sum, item) =>
+            sum +
+            (double.tryParse(item['price'].toString()) ?? 0.0) *
+                item['quantity'],
+      );
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
+  void _saveOrder() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? loggedInUserJson = prefs.getString('logged_in_user');
+    if (loggedInUserJson == null) {
+      Fluttertoast.showToast(
+        msg: "No user logged in.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+      );
+      return;
+    }
+    Map<String, dynamic> loggedInUser = jsonDecode(loggedInUserJson);
+
+    double totalPrice = _calculateTotalPrice();
+    List<Map<String, dynamic>> items = widget.cartItems.map((item) {
+      return {
+        'name': item['name'],
+        'price': item['price'],
+        'quantity': item['quantity'],
+      };
+    }).toList();
+
+    String? ordersJson = prefs.getString('flutter.orders');
+    List<Map<String, dynamic>> orders = ordersJson != null
+        ? List<Map<String, dynamic>>.from(jsonDecode(ordersJson))
+        : [];
+
+    orders.add({
+      'username': loggedInUser['username'],
+      'totalPrice': totalPrice,
+      'items': items,
+    });
+    await prefs.setString('flutter.orders', jsonEncode(orders));
+    Fluttertoast.showToast(
+      msg: "Order placed successfully.",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
     );
   }
 
@@ -52,18 +104,34 @@ class _CartPageState extends State<CartPage> {
                         leading: CircleAvatar(
                           backgroundImage:
                               item['photo'] != null && item['photo'] != ""
-                                  ? FileImage(File(item['photo']))
+                                  ? FileImage(
+                                      File(
+                                        item['photo'],
+                                      ),
+                                    )
                                   : null,
                           backgroundColor: Colors.grey[200],
+                          child: item['photo'] == null || item['photo'] == ""
+                              ? const Icon(
+                                  Icons.image,
+                                  color: Colors.grey,
+                                )
+                              : null,
                         ),
-                        title: Text(item['name']),
+                        title: Text(
+                          item['name'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         subtitle: Text(
-                            "Price: \$${item['price']} x ${item['quantity']}"),
+                          "Price: \$${item['price']} x ${item['quantity']}",
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Total: \$${(double.parse(item['price'].toString()) * item['quantity']).toStringAsFixed(2)}",
+                              "Total: \$${(double.tryParse(item['price'].toString()) ?? 0.0 * item['quantity']).toStringAsFixed(2)}",
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
@@ -99,14 +167,13 @@ class _CartPageState extends State<CartPage> {
                               MaterialStateProperty.all(thirdColor),
                           shape: MaterialStateProperty.all(
                             RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                12,
-                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         ),
                         onPressed: () {
                           if (widget.cartItems.isNotEmpty) {
+                            _saveOrder();
                             widget.onPurchaseItems();
                             Navigator.pop(context);
                           } else {

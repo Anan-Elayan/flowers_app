@@ -49,7 +49,9 @@ class MarketCard extends StatelessWidget {
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.file(
-                        File(item['photo']),
+                        File(
+                          item['photo'],
+                        ),
                         height: 80,
                         width: 80,
                         fit: BoxFit.cover,
