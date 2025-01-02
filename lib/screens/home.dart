@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:badges/badges.dart' as badges;
+import 'package:flowers_app/components/offers.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -81,7 +83,17 @@ class _HomeState extends State<Home> {
   }
 
   void _deleteFromCart(dynamic item) {
-    cartItems.removeWhere((cartItem) => cartItem['id'] == item['id']);
+    setState(() {
+      final cartItemIndex =
+          cartItems.indexWhere((cartItem) => cartItem['id'] == item['id']);
+      if (cartItemIndex >= 0) {
+        if (cartItems[cartItemIndex]['quantity'] > 1) {
+          cartItems[cartItemIndex]['quantity'] -= 1;
+        } else {
+          cartItems.removeAt(cartItemIndex);
+        }
+      }
+    });
   }
 
   void _purchaseItems() async {
@@ -108,20 +120,31 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CartPage(
-                    cartItems: cartItems,
-                    onDeleteItem: _deleteFromCart,
-                    onPurchaseItems: _purchaseItems,
+          badges.Badge(
+            position: badges.BadgePosition.topEnd(top: 0, end: 3),
+            badgeContent: Text(
+              '${cartItems.fold<int>(0, (sum, item) => sum + item['quantity'] as int)}',
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+            ),
+            badgeStyle: badges.BadgeStyle(
+              badgeColor: Colors.red,
+              padding: const EdgeInsets.all(6),
+            ),
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CartPage(
+                      cartItems: cartItems,
+                      onDeleteItem: _deleteFromCart,
+                      onPurchaseItems: _purchaseItems,
+                    ),
                   ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.shopping_cart),
+                );
+              },
+              icon: const Icon(Icons.shopping_cart),
+            ),
           ),
         ],
         leading: IconButton(
@@ -153,54 +176,61 @@ class _HomeState extends State<Home> {
           },
         ),
       ),
-      body: FutureBuilder<List<dynamic>>(
-        future: listOfAllItemsInMarket,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (snapshot.hasData) {
-            List<dynamic> items = snapshot.data!;
+      body: Column(
+        children: [
+          const Offers(),
+          Expanded(
+            child: FutureBuilder<List<dynamic>>(
+              future: listOfAllItemsInMarket,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                } else if (snapshot.hasData) {
+                  List<dynamic> items = snapshot.data!;
 
-            if (items.isEmpty) {
-              return const Center(child: Text("No items found."));
-            }
+                  if (items.isEmpty) {
+                    return const Center(child: Text("No items found."));
+                  }
 
-            return ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                final cartItemIndex =
-                    cartItems.indexWhere((i) => i['id'] == item['id']);
-                final quantityInCart = cartItemIndex >= 0
-                    ? cartItems[cartItemIndex]['quantity']
-                    : 0;
+                  return ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final cartItemIndex =
+                          cartItems.indexWhere((i) => i['id'] == item['id']);
+                      final quantityInCart = cartItemIndex >= 0
+                          ? cartItems[cartItemIndex]['quantity']
+                          : 0;
 
-                return MarketCard(
-                  item: item,
-                  quantityInCart: quantityInCart,
-                  onIncrement: () {
-                    if (item['available_quantity'] > 0) {
-                      _addToCart(item);
-                    } else {
-                      _showToast("No more items available.");
-                    }
-                  },
-                  onDecrement: () {
-                    if (quantityInCart > 0) {
-                      _deleteFromCart(item);
-                    } else {
-                      _showToast("Item not in cart.");
-                    }
-                  },
-                );
+                      return MarketCard(
+                        item: item,
+                        quantityInCart: quantityInCart,
+                        onIncrement: () {
+                          if (item['available_quantity'] > 0) {
+                            _addToCart(item);
+                          } else {
+                            _showToast("No more items available.");
+                          }
+                        },
+                        onDecrement: () {
+                          if (quantityInCart > 0) {
+                            _deleteFromCart(item);
+                          } else {
+                            _showToast("Item not in cart.");
+                          }
+                        },
+                      );
+                    },
+                  );
+                } else {
+                  return const Center(child: Text("No items found."));
+                }
               },
-            );
-          } else {
-            return const Center(child: Text("No items found."));
-          }
-        },
+            ),
+          ),
+        ],
       ),
     );
   }

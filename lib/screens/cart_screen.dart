@@ -131,7 +131,7 @@ class _CartPageState extends State<CartPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Total: \$${(double.tryParse(item['price'].toString()) ?? 0.0 * item['quantity']).toStringAsFixed(2)}",
+                              "Total: \$${(double.parse(item['price'].toString()) * (item['quantity'] as int)).toStringAsFixed(2)}",
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
