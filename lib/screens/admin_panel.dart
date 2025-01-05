@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants/logout_dialog.dart';
 import 'login.dart';
 
 class AdminPanel extends StatefulWidget {
@@ -106,63 +107,9 @@ class _AdminPanelState extends State<AdminPanel> {
                 final confirmLogout = await showDialog<bool>(
                   context: context,
                   builder: (BuildContext context) {
-                    return AlertDialog(
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(20), // Rounded corners
-                      ),
-                      title: Row(
-                        children: [
-                          Icon(
-                            Icons.logout,
-                            color: Colors.redAccent,
-                            size: 28, // Logout icon
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            "Confirm Logout",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      content: const Text(
-                        "Are you sure you want to log out?",
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
-                      ),
-                      actionsPadding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      actions: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.black87,
-                            backgroundColor: Colors.grey[300],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop(false); // Do not log out
-                          },
-                          child: const Text("Cancel"),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.redAccent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop(true); // Confirm logout
-                          },
-                          child: const Text("Logout"),
-                        ),
-                      ],
-                    );
+                    return LogoutDialog();
                   },
                 );
-
                 if (confirmLogout == true) {
                   Navigator.pushReplacement(
                     context,
