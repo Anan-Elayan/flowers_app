@@ -2,6 +2,7 @@ import 'package:flowers_app/components/custom_button.dart';
 import 'package:flowers_app/components/custom_text_fields.dart';
 import 'package:flowers_app/screens/register.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/constants.dart';
@@ -30,19 +31,52 @@ class _LoginScreenState extends State<LoginScreen> {
         _usernameController.text.trim(),
         _passwordController.text.trim(),
       );
-      if (user != null) {
-        await saveLoginCredentials(_usernameController.text.trim(),
-            _passwordController.text.trim(), _rememberMe);
+      if (user == null) {
+        Fluttertoast.showToast(
+          msg: "Invalid username or password. Please try again.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+        return;
       }
+      await saveLoginCredentials(
+        _usernameController.text.trim(),
+        _passwordController.text.trim(),
+        _rememberMe,
+      );
       if (user?.accountType == 'User') {
+        Fluttertoast.showToast(
+          msg: "Welcome 😊",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => Home()),
         );
-      } else {
+      } else if (user?.accountType == 'Admin') {
+        Fluttertoast.showToast(
+          msg: "Welcome 😊",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => AdminPanel()),
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Unknown account type.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
         );
       }
     }
@@ -148,6 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 20),
                       CustomTextFields(
                         txtLabel: "Password",
+                        txtSuffixIcon: Icons.ac_unit,
                         txtPrefixIcon: Icons.lock,
                         controller: _passwordController,
                         isVisibleContent: true,

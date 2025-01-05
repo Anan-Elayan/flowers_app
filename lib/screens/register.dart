@@ -1,6 +1,7 @@
 import 'package:flowers_app/components/custom_button.dart';
 import 'package:flowers_app/services/prefrence.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../components/custom_text_fields.dart';
 import '../constants/constants.dart';
@@ -32,9 +33,14 @@ class _RegisterState extends State<Register> {
         _phoneNumberController.text.trim(),
         accountType,
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result)),
+      Fluttertoast.showToast(
+        msg: result,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
       );
+
       if (result == "Registration successful!") {
         Navigator.pop(context);
       }
@@ -132,6 +138,7 @@ class _RegisterState extends State<Register> {
                         txtLabel: "Password",
                         txtPrefixIcon: Icons.lock,
                         isVisibleContent: true,
+                        txtSuffixIcon: Icons.ac_unit,
                         controller: _passwordController,
                         validate: (value) {
                           if (value == null || value.isEmpty) {
@@ -165,6 +172,7 @@ class _RegisterState extends State<Register> {
                         keyBordType: TextInputType.number,
                         txtPrefixIcon: Icons.phone,
                         isVisibleContent: false,
+                        maxLength: 10,
                         controller: _phoneNumberController,
                         validate: (value) {
                           if (value == null || value.isEmpty) {

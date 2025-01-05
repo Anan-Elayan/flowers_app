@@ -102,17 +102,80 @@ class _AdminPanelState extends State<AdminPanel> {
         appBar: AppBar(
           actions: [
             IconButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+              onPressed: () async {
+                final confirmLogout = await showDialog<bool>(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(20), // Rounded corners
+                      ),
+                      title: Row(
+                        children: [
+                          Icon(
+                            Icons.logout,
+                            color: Colors.redAccent,
+                            size: 28, // Logout icon
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            "Confirm Logout",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      content: const Text(
+                        "Are you sure you want to log out?",
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                      ),
+                      actionsPadding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      actions: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.black87,
+                            backgroundColor: Colors.grey[300],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop(false); // Do not log out
+                          },
+                          child: const Text("Cancel"),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.redAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop(true); // Confirm logout
+                          },
+                          child: const Text("Logout"),
+                        ),
+                      ],
+                    );
+                  },
                 );
+
+                if (confirmLogout == true) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
+                  );
+                }
               },
               icon: const Icon(
                 Icons.logout,
                 color: Colors.white,
               ),
-            )
+            ),
           ],
           automaticallyImplyLeading: false,
           backgroundColor: thirdColor,
@@ -182,20 +245,58 @@ class _AdminPanelState extends State<AdminPanel> {
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: const Text("Confirm Deletion"),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      20), // Rounded corners
+                                ),
+                                title: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.redAccent,
+                                      size: 28, // Warning icon
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Text(
+                                      "Confirm Deletion",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
                                 content: const Text(
-                                    "Are you sure you want to delete this item?"),
+                                  "Are you sure you want to delete this item? This action cannot be undone.",
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.black87),
+                                ),
+                                actionsPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
                                 actions: [
-                                  TextButton(
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.black87,
+                                      backgroundColor: Colors.grey[300],
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
                                     onPressed: () {
                                       Navigator.of(context).pop(
-                                          false); // Close the dialog and do not delete
+                                          false); // Close the dialog without deleting
                                     },
-                                    child: const Text("No"),
+                                    child: const Text("Cancel"),
                                   ),
-                                  TextButton(
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      backgroundColor: Colors.redAccent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
                                     onPressed: () {
-                                      Navigator.of(context).pop(true);
+                                      Navigator.of(context)
+                                          .pop(true); // Confirm deletion
                                       Fluttertoast.showToast(
                                         msg: "Deleted successfully.",
                                         toastLength: Toast.LENGTH_SHORT,
@@ -204,7 +305,7 @@ class _AdminPanelState extends State<AdminPanel> {
                                         textColor: Colors.white,
                                       );
                                     },
-                                    child: const Text("Yes"),
+                                    child: const Text("Delete"),
                                   ),
                                 ],
                               );
@@ -245,47 +346,115 @@ class _AdminPanelState extends State<AdminPanel> {
                                   text: item['price'].toString(),
                                 );
                                 return AlertDialog(
-                                  title: const Text("Update Item"),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        20), // Rounded corners
+                                  ),
+                                  title: Row(
                                     children: [
-                                      TextField(
-                                        controller: nameController,
-                                        decoration: const InputDecoration(
-                                          labelText: "Name",
-                                        ),
+                                      Icon(
+                                        Icons.edit,
+                                        color: Theme.of(context).primaryColor,
                                       ),
-                                      TextField(
-                                        controller: priceController,
-                                        decoration: const InputDecoration(
-                                          labelText: "Price",
+                                      const SizedBox(width: 10),
+                                      const Text(
+                                        "Update Item",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        keyboardType: TextInputType.number,
-                                      ),
-                                      TextField(
-                                        controller: quantityController,
-                                        decoration: const InputDecoration(
-                                          labelText: "Quantity",
-                                        ),
-                                        keyboardType: TextInputType.number,
-                                      ),
-                                      TextField(
-                                        controller: availableQuantityController,
-                                        decoration: const InputDecoration(
-                                          labelText: "Available Quantity",
-                                        ),
-                                        keyboardType: TextInputType.number,
                                       ),
                                     ],
                                   ),
+                                  content: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextFormField(
+                                          controller: nameController,
+                                          decoration: InputDecoration(
+                                            labelText: "Name",
+                                            hintText: "Enter item name",
+                                            prefixIcon: const Icon(Icons.label),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        TextFormField(
+                                          controller: priceController,
+                                          decoration: InputDecoration(
+                                            labelText: "Price",
+                                            hintText: "Enter item price",
+                                            prefixIcon:
+                                                const Icon(Icons.attach_money),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                        const SizedBox(height: 10),
+                                        TextFormField(
+                                          controller: quantityController,
+                                          decoration: InputDecoration(
+                                            labelText: "Initial Quantity",
+                                            hintText: "Enter initial quantity",
+                                            prefixIcon:
+                                                const Icon(Icons.inventory),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                        const SizedBox(height: 10),
+                                        TextFormField(
+                                          controller:
+                                              availableQuantityController,
+                                          decoration: InputDecoration(
+                                            labelText: "Available Quantity",
+                                            hintText:
+                                                "Enter available quantity",
+                                            prefixIcon:
+                                                const Icon(Icons.inventory_2),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   actions: [
-                                    TextButton(
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.grey[400],
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
                                       onPressed: () {
                                         Navigator.pop(context);
                                       },
                                       child: const Text("Cancel"),
                                     ),
-                                    TextButton(
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor: thirdColor,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
                                       onPressed: () {
                                         Navigator.pop(context);
                                         _updateItem(item['id'], {
@@ -293,7 +462,8 @@ class _AdminPanelState extends State<AdminPanel> {
                                           'name': nameController.text,
                                           'quantity': quantityController.text,
                                           'price': double.tryParse(
-                                                  priceController.text) ??
+                                                priceController.text,
+                                              ) ??
                                               0.0,
                                           'photo': item['photo'],
                                           'admin': item['admin'],
@@ -406,98 +576,114 @@ class _AdminPanelState extends State<AdminPanel> {
                       return Card(
                         margin: const EdgeInsets.symmetric(
                             vertical: 10, horizontal: 16),
-                        elevation: 5,
+                        elevation: 6,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius:
+                              BorderRadius.circular(15), // Rounded corners
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: Row(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "User: ${order['username']}",
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                              // Header section
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "User: ${order['username']}",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      "Total Price: \$${order['totalPrice'].toStringAsFixed(2)}",
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      "Items:",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    ...items.map((item) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 4.0),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                "${item['name']} x ${item['quantity']}",
-                                                style: const TextStyle(
-                                                    fontSize: 14),
-                                              ),
-                                            ),
-                                            Text(
-                                              "\$${(double.parse(item['price'].toString()) * item['quantity']).toStringAsFixed(2)}",
-                                              style:
-                                                  const TextStyle(fontSize: 14),
-                                            ),
-                                          ],
-                                        ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () async {
+                                      // Remove the order from the list
+                                      setState(() {
+                                        orders.removeAt(
+                                            index); // Directly remove the order
+                                      });
+
+                                      // Save the updated orders to SharedPreferences
+                                      SharedPreferences prefs =
+                                          await SharedPreferences.getInstance();
+                                      await prefs.setString(
+                                          'flutter.orders', jsonEncode(orders));
+
+                                      // Show a toast message indicating the order was marked as served
+                                      Fluttertoast.showToast(
+                                        msg: "Order served successfully.",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.BOTTOM,
+                                        backgroundColor: Colors.green,
+                                        textColor: Colors.white,
                                       );
-                                    }).toList(),
-                                  ],
+                                    },
+                                    icon: const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green,
+                                      size:
+                                          28, // Larger icon for better visibility
+                                    ),
+                                    tooltip: "Mark as served",
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+
+                              // Total price section
+                              Text(
+                                "Total Price: \$${order['totalPrice'].toStringAsFixed(2)}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      Colors.grey[800], // Subtle accent color
                                 ),
                               ),
-                              // Add the green tick icon
-                              IconButton(
-                                onPressed: () async {
-                                  // Remove the order from the list
-                                  setState(() {
-                                    orders.removeAt(
-                                        index); // Directly remove the order
-                                  });
-
-                                  // Save the updated orders to SharedPreferences
-                                  SharedPreferences prefs =
-                                      await SharedPreferences.getInstance();
-                                  await prefs.setString(
-                                      'flutter.orders', jsonEncode(orders));
-
-                                  // Show a toast message indicating the order was marked as served
-                                  Fluttertoast.showToast(
-                                    msg: "Order served successfully.",
-                                    toastLength: Toast.LENGTH_SHORT,
-                                    gravity: ToastGravity.BOTTOM,
-                                    backgroundColor: Colors.green,
-                                    textColor: Colors.white,
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                ),
-                                tooltip: "Mark as served",
+                              const Divider(
+                                height: 20,
+                                thickness: 1,
+                                color: Colors.grey,
                               ),
+
+                              // Items list section
+                              const Text(
+                                "Items:",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ...items.map((item) {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          "${item['name']} x ${item['quantity']}",
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      Text(
+                                        "\$${(double.parse(item['price'].toString()) * item['quantity']).toStringAsFixed(2)}",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[
+                                              600], // Subtle accent color for totals
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
                             ],
                           ),
                         ),

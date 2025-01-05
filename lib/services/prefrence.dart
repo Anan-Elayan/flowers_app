@@ -62,10 +62,14 @@ Future<String> registerUser(
   return "Registration successful!";
 }
 
-Future<User> login(String username, String password) async {
+Future<User?> login(String username, String password) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? existingData = prefs.getString('user_list');
   List<dynamic> userList = existingData != null ? jsonDecode(existingData) : [];
+  if (userList.isEmpty) {
+    print("No users found.");
+    return null;
+  }
   for (var userJson in userList) {
     User user = User.fromJson(userJson);
     if (user.username == username && user.password == password) {
@@ -73,7 +77,8 @@ Future<User> login(String username, String password) async {
       return user;
     }
   }
-  throw Exception("Invalid username or password");
+  print("Invalid username or password.");
+  return null;
 }
 
 Future<void> saveLoginCredentials(
